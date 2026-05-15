@@ -1,0 +1,6 @@
+.gopath/
+.local/
+*.test
+benchmark
+github/
+.DS_Store
