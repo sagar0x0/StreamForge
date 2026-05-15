@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package broker;
+
+option go_package = "github.com/sagar/streamforge/proto";
+
+service BrokerService {
+  rpc Produce (ProduceRequest) returns (ProduceResponse);
+  rpc Fetch (FetchRequest) returns (FetchResponse);
+  rpc Metadata (MetadataRequest) returns (MetadataResponse);
+  rpc OffsetCommit (OffsetCommitRequest) returns (OffsetCommitResponse);
+  rpc OffsetFetch (OffsetFetchRequest) returns (OffsetFetchResponse);
+}
+
+message ProduceRequest {
+  string topic = 1;
+  int32 partition = 2;
+  bytes key = 3;
+  bytes value = 4;
+}
+
+message ProduceResponse {
+  bool success = 1;
+  int64 offset = 2;
+}
+
+message FetchRequest {
+  string topic = 1;
+  int32 partition = 2;
+  int64 offset = 3;
+}
+
+message FetchResponse {
+  bytes key = 1;
+  bytes value = 2;
+  int64 offset = 3;
+  int64 next_offset = 4;
+}
+
+message MetadataRequest {
+  string topic = 1;
+}
+
+message MetadataResponse {
+  map<int32, int32> partition_leaders = 1; // Partition ID -> Broker ID
+}
+
+message OffsetCommitRequest {
+  string group_id = 1;
+  string topic = 2;
+  int32 partition = 3;
+  int64 offset = 4;
+}
+
+message OffsetCommitResponse {
+  bool success = 1;
+}
+
+message OffsetFetchRequest {
+  string group_id = 1;
+  string topic = 2;
+  int32 partition = 3;
+}
+
+message OffsetFetchResponse {
+  int64 offset = 1;
+}

@@ -1,0 +1,9 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/speculative
+cpu: Apple M1
+BenchmarkStragglerDetector_UpdateProgress-8   	75339704	        47.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStragglerDetector_ComputeMedian-8    	39389480	        90.98 ns/op	      64 B/op	       1 allocs/op
+BenchmarkResultArbitrator_Submit-8            	19385371	       866.8 ns/op	     190 B/op	       2 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/speculative	26.842s

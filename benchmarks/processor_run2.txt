@@ -1,0 +1,10 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/processor
+cpu: Apple M1
+BenchmarkAggregatorApply-8         	10397118	       312.4 ns/op	     224 B/op	       5 allocs/op
+BenchmarkWindowAssign_Tumbling-8   	231246379	        15.79 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStateStore_PutGet-8       	40870194	        86.82 ns/op	      87 B/op	       2 allocs/op
+BenchmarkEngineProcessEvent-8      	 8938172	       404.0 ns/op	     328 B/op	       9 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/processor	16.661s

@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package consumer;
+
+option go_package = "github.com/sagar/streamforge/proto";
+
+service ConsumerCoordinator {
+  rpc JoinGroup (JoinGroupRequest) returns (JoinGroupResponse);
+  rpc SyncGroup (SyncGroupRequest) returns (SyncGroupResponse);
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+  rpc LeaveGroup (LeaveGroupRequest) returns (LeaveGroupResponse);
+}
+
+message JoinGroupRequest {
+  string group_id = 1;
+  string consumer_id = 2;
+}
+
+message JoinGroupResponse {
+  string consumer_id = 1;
+  int32 generation_id = 2;
+  bool is_leader = 3;
+  repeated string members = 4;
+}
+
+message SyncGroupRequest {
+  string group_id = 1;
+  string consumer_id = 2;
+  int32 generation_id = 3;
+  map<string, PartitionAssignment> assignments = 4; // consumer_id -> assignment (sent by leader only)
+}
+
+message PartitionAssignment {
+  repeated int32 partitions = 1;
+}
+
+message SyncGroupResponse {
+  PartitionAssignment assignment = 1;
+}
+
+message HeartbeatRequest {
+  string group_id = 1;
+  string consumer_id = 2;
+  int32 generation_id = 3;
+}
+
+message HeartbeatResponse {
+  bool rebalance_in_progress = 1;
+}
+
+message LeaveGroupRequest {
+  string group_id = 1;
+  string consumer_id = 2;
+}
+
+message LeaveGroupResponse {
+  bool success = 1;
+}

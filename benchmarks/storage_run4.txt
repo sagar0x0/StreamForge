@@ -1,0 +1,20 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/storage
+cpu: Apple M1
+BenchmarkWALAppend_128B-8                 	   70033	     52918 ns/op	   2.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWALAppend_512B-8                 	   69742	     53675 ns/op	   9.54 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWALAppend_1KB-8                  	   69580	     54593 ns/op	  18.76 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWALAppend_4KB-8                  	   58129	     60079 ns/op	  68.18 MB/s	       0 B/op	       0 allocs/op
+BenchmarkWALReplay-8                      	    2562	   1349447 ns/op	 3621567 B/op	   20026 allocs/op
+BenchmarkSegmentAppend-8                  	 1000000	      3163 ns/op	  80.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkSegmentRead-8                    	 3706464	       975.2 ns/op	 262.51 MB/s	     256 B/op	       1 allocs/op
+BenchmarkIndexLookup-8                    	41445667	        86.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPartitionAppend_SingleWriter-8   	   66966	     55074 ns/op	     418 B/op	       8 allocs/op
+BenchmarkPartitionAppend_8Writers-8       	   81831	     46572 ns/op	     416 B/op	       7 allocs/op
+BenchmarkPartitionAppend_16Writers-8      	   82195	     46567 ns/op	     421 B/op	       7 allocs/op
+BenchmarkPartitionRead_Sequential-8       	  677666	      5282 ns/op	     299 B/op	       7 allocs/op
+BenchmarkPartitionRead_Random-8           	  666699	      5450 ns/op	     299 B/op	       7 allocs/op
+BenchmarkPartitionThroughput_4P_8W-8      	   78066	     51532 ns/op	     411 B/op	       7 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/storage	93.029s

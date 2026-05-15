@@ -1,0 +1,50 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/processor
+cpu: Apple M1
+BenchmarkAggregatorApply-8         	10695151	       316.0 ns/op	     224 B/op	       5 allocs/op
+BenchmarkWindowAssign_Tumbling-8   	227646256	        15.58 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStateStore_PutGet-8       	42049381	        88.05 ns/op	      87 B/op	       2 allocs/op
+BenchmarkEngineProcessEvent-8      	 8894574	       412.6 ns/op	     328 B/op	       9 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/processor	16.925s
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/processor
+cpu: Apple M1
+BenchmarkAggregatorApply-8         	10397118	       312.4 ns/op	     224 B/op	       5 allocs/op
+BenchmarkWindowAssign_Tumbling-8   	231246379	        15.79 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStateStore_PutGet-8       	40870194	        86.82 ns/op	      87 B/op	       2 allocs/op
+BenchmarkEngineProcessEvent-8      	 8938172	       404.0 ns/op	     328 B/op	       9 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/processor	16.661s
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/processor
+cpu: Apple M1
+BenchmarkAggregatorApply-8         	10696040	       313.0 ns/op	     224 B/op	       5 allocs/op
+BenchmarkWindowAssign_Tumbling-8   	232301788	        15.58 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStateStore_PutGet-8       	41459787	        86.83 ns/op	      87 B/op	       2 allocs/op
+BenchmarkEngineProcessEvent-8      	 8933542	       403.3 ns/op	     328 B/op	       9 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/processor	17.088s
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/processor
+cpu: Apple M1
+BenchmarkAggregatorApply-8         	10518818	       315.6 ns/op	     224 B/op	       5 allocs/op
+BenchmarkWindowAssign_Tumbling-8   	232105030	        15.68 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStateStore_PutGet-8       	41398382	        85.88 ns/op	      87 B/op	       2 allocs/op
+BenchmarkEngineProcessEvent-8      	 8786004	       408.7 ns/op	     328 B/op	       9 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/processor	16.712s
+goos: darwin
+goarch: arm64
+pkg: github.com/sagar/streamforge/internal/processor
+cpu: Apple M1
+BenchmarkAggregatorApply-8         	10623396	       312.1 ns/op	     224 B/op	       5 allocs/op
+BenchmarkWindowAssign_Tumbling-8   	227219616	        15.76 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStateStore_PutGet-8       	40407195	        89.40 ns/op	      87 B/op	       2 allocs/op
+BenchmarkEngineProcessEvent-8      	 8585460	       409.9 ns/op	     328 B/op	       9 allocs/op
+PASS
+ok  	github.com/sagar/streamforge/internal/processor	16.684s
