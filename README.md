@@ -4,7 +4,7 @@
 
 **A production-grade distributed stream processing engine built from first principles in Go.**
 
-Combines a custom Kafka-style distributed broker, a Flink-style stateful stream processor, and a novel speculative execution engine for straggler mitigation — all wired together over gRPC and Raft consensus implemented from scratch.
+Combines a custom Kafka-style distributed broker, a Flink-style stateful stream processor, and a novel speculative execution engine for straggler mitigation all wired together over gRPC and Raft consensus implemented from scratch.
 
 [![Go](https://img.shields.io/badge/Go-1.22-00ADD8?style=flat-square&logo=go)](https://go.dev/)
 [![gRPC](https://img.shields.io/badge/gRPC-Protobuf-244c5a?style=flat-square&logo=grpc)](https://grpc.io/)
@@ -217,7 +217,7 @@ Tumbling windows are strictly non-overlapping and the cheapest to maintain — o
 
 #### Chandy-Lamport Distributed Checkpointing
 
-`CheckpointCoordinator` periodically injects **BARRIER** markers into each partition's event stream. Workers process pre-barrier events, snapshot their `StateStore` to disk, then forward the BARRIER downstream. `BarrierAlignment` blocks a worker from processing post-barrier events on a faster partition until all partitions deliver the same BARRIER — ensuring a globally consistent snapshot.
+`CheckpointCoordinator` periodically injects **BARRIER** markers into each partition's event stream. Workers process pre-barrier events, snapshot their `StateStore` to disk, then forward the BARRIER downstream. `BarrierAlignment` blocks a worker from processing post-barrier events on a faster partition until all partitions deliver the same BARRIER, ensuring a globally consistent snapshot.
 
 ```
 Partition 0:  [e1][e2][BARRIER-7][e3][e4]
