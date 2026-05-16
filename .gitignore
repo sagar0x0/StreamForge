@@ -4,5 +4,5 @@
 benchmark
 github/
 .DS_Store
-benchmark_results
-project
+benchmark_results.md
+project.md
