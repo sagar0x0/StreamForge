@@ -418,7 +418,7 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 | Duplicate compute overhead | 7.1% |
 | Per-partition straggler latency reduction | **~75%** (500–950ms → 120–150ms) |
 
-> The window-level P99 improvement is bounded by windows with *multiple concurrent stragglers*. At the per-partition level, every detected straggler was fully eliminated — a strict 0% miss rate under the test load.
+> The window-level P99 improvement is bounded by windows with *multiple concurrent stragglers*. At the per-partition level, every detected straggler was fully eliminated a strict 0% miss rate under the test load.
 
 ---
 
@@ -511,16 +511,16 @@ All cluster parameters are passed via environment variables to the Docker contai
 ## Design Decisions & Trade-offs
 
 ### Why Raft from scratch instead of etcd?
-Delegating leader election to etcd would hide the hard part. The educational and interview value of this project is the direct, from-paper implementation of the consensus protocol. The `internal/raft/` package includes full log compaction, snapshot install, and the fast log backtrack optimization from the extended Raft paper.
+Delegating leader election to etcd would hide the hard part. The learning value of this project is the direct, from-paper implementation of the consensus protocol. The `internal/raft/` package includes full log compaction, snapshot install, and the fast log backtrack optimization from the extended Raft paper.
 
 ### Why WAL before segment append?
-Without the WAL, a crash between `Append()` starting and `fsync()` completing would silently lose the write — no error, no recovery. The WAL with CRC32 gives crash atomicity: either the payload survived the CRC check on replay, or it is discarded and the producer retries. Same as PostgreSQL's `pg_wal`.
+Without the WAL, a crash between `Append()` starting and `fsync()` completing would silently lose the write no error, no recovery. The WAL with CRC32 gives crash atomicity: either the payload survived the CRC check on replay, or it is discarded and the producer retries. Same as PostgreSQL's `pg_wal`.
 
 ### Why first-write-wins over a coordinator for speculation?
-A central coordinator for arbitration is a single point of failure and an additional round trip on the critical path. Tombstone-based local arbitration is O(1), contention-free under the common case (only 7.1% of partition-windows ever speculate), and safe because speculative tasks only start after a checkpoint boundary — their initial state is always identical.
+A central coordinator for arbitration is a single point of failure and an additional round trip on the critical path. Tombstone-based local arbitration is O(1), contention-free under the common case (only 7.1% of partition-windows ever speculate), and safe because speculative tasks only start after a checkpoint boundary their initial state is always identical.
 
 ### At-least-once vs. exactly-once
-The broker delivers at-least-once (producer retries on timeout; consumer may reprocess on restart before the offset commit). Within the processor, Chandy-Lamport checkpointing + offset-anchored replay achieves exactly-once computation semantics. End-to-end exactly-once would require idempotent output sinks — explicitly out of scope and documented as such.
+The broker delivers at-least-once (producer retries on timeout; consumer may reprocess on restart before the offset commit). Within the processor, Chandy-Lamport checkpointing + offset-anchored replay achieves exactly-once computation semantics. End-to-end exactly-once would require idempotent output sinks explicitly out of scope and documented as such.
 
 ### Sparse index trade-off
 Writing a full index entry per message would enable true O(1) reads but at 2× write amplification and proportionally larger index files. Indexing every 10th entry bounds the linear scan to ≤10 records while keeping index size at ~10% of the log — the same strategy Kafka uses in production.
