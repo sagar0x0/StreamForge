@@ -4,9 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagar/streamforge/pkg/types"
-	"github.com/sagar/streamforge/pkg/log"
 	"github.com/sagar/streamforge/internal/speculative"
+	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/types"
 )
 
 type Engine struct {
@@ -65,10 +65,13 @@ func (e *Engine) ProcessStream(partitionID int32, stream <-chan types.Message) {
 			}
 			
 			// Periodically report progress to straggler detector
-			if processedCount%100 == 0 && e.stragglerDetector != nil {
-				// Mock progress metric (e.g., 0.0 to 1.0)
-				progress := float64(processedCount % 1000) / 1000.0
-				e.stragglerDetector.UpdateProgress(partitionID, progress, time.Now())
+			if processedCount%100 == 0 {
+				if e.stragglerDetector != nil {
+					// Mock progress metric (e.g., 0.0 to 1.0)
+					progress := float64(processedCount % 1000) / 1000.0
+					e.stragglerDetector.UpdateProgress(partitionID, progress, time.Now())
+				}
+
 			}
 		}
 	}

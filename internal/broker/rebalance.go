@@ -1,9 +1,13 @@
 package broker
 
 import (
+	"net"
 	"sync"
+	"time"
 
 	"github.com/sagar/streamforge/pkg/log"
+	pb "github.com/sagar/streamforge/proto"
+	"google.golang.org/grpc"
 )
 
 type ConsumerGroupMember struct {
@@ -20,18 +24,84 @@ type ConsumerGroup struct {
 }
 
 type RebalanceCoordinator struct {
+	pb.UnimplementedConsumerCoordinatorServer
 	groups map[string]*ConsumerGroup
 	mu     sync.RWMutex
+
+	grpcServer *grpc.Server
+	listener   net.Listener
+	stopCh     chan struct{}
 }
 
 func NewRebalanceCoordinator() *RebalanceCoordinator {
 	return &RebalanceCoordinator{
 		groups: make(map[string]*ConsumerGroup),
+		stopCh: make(chan struct{}),
 	}
 }
 
-// JoinGroup adds a consumer to the group and triggers rebalance logic.
-func (c *RebalanceCoordinator) JoinGroup(groupID, consumerID string) {
+func (c *RebalanceCoordinator) Start(address string) error {
+	lis, err := net.Listen("tcp", address)
+	if err != nil {
+		return err
+	}
+	c.listener = lis
+	c.grpcServer = grpc.NewServer()
+	pb.RegisterConsumerCoordinatorServer(c.grpcServer, c)
+
+	go func() {
+		if err := c.grpcServer.Serve(c.listener); err != nil {
+			log.WithComponent("coordinator").Error("Failed to serve gRPC", "error", err)
+		}
+	}()
+	log.WithComponent("coordinator").Info("Started coordinator grpc server", "address", address)
+	
+	go c.heartbeatMonitor()
+	
+	return nil
+}
+
+func (c *RebalanceCoordinator) Stop() {
+	close(c.stopCh)
+	if c.grpcServer != nil {
+		c.grpcServer.GracefulStop()
+	}
+}
+
+func (c *RebalanceCoordinator) heartbeatMonitor() {
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-c.stopCh:
+			return
+		case <-ticker.C:
+			c.mu.Lock()
+			now := time.Now().UnixMilli()
+			for _, group := range c.groups {
+				group.mu.Lock()
+				changed := false
+				for id, member := range group.Members {
+					if now-member.LastHeartbeat > 2000 { // 2s timeout
+						log.WithComponent("coordinator").Info("Consumer timeout", "consumer", id)
+						delete(group.Members, id)
+						changed = true
+					}
+				}
+				if changed {
+					group.GenerationID++
+					c.rebalance(group)
+				}
+				group.mu.Unlock()
+			}
+			c.mu.Unlock()
+		}
+	}
+}
+
+// JoinGroupInternal adds a consumer to the group and triggers rebalance logic.
+func (c *RebalanceCoordinator) JoinGroupInternal(groupID, consumerID string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -49,7 +119,8 @@ func (c *RebalanceCoordinator) JoinGroup(groupID, consumerID string) {
 	defer group.mu.Unlock()
 
 	group.Members[consumerID] = &ConsumerGroupMember{
-		ConsumerID: consumerID,
+		ConsumerID:    consumerID,
+		LastHeartbeat: time.Now().UnixMilli(),
 	}
 	
 	group.GenerationID++

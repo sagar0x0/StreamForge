@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sagar/streamforge/pkg/types"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/types"
 )
 
 type SpeculativeManager struct {
