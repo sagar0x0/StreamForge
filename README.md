@@ -369,10 +369,10 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 | Metric | Result |
 |---|---|
 | Message throughput | **21,000 msg/sec** |
-| WAL write throughput | **68 MB/s** |
-| Write latency P50 | 34.0 µs |
-| Write latency P99 | 4,200 µs |
-| Heartbeat failure detection | 300 ms (3 × 100ms timeout) |
+| WAL write throughput | **68 MB/s** (4KB payload) |
+| Write latency P50 | 34–48 µs |
+| Write latency P99 | 4,200–4,850 µs |
+| Heartbeat failure detection | 150 ms (configured) |
 | Raft leader election | **30 ms** |
 | **Total end-to-end failover** | **< 346 ms** |
 | Messages lost during failover | **0** |
@@ -382,23 +382,22 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 
 | Metric | Result |
 |---|---|
-| Heartbeat liveness detection | 153 ms |
-| Rebalance time (failure recovery) | 0.04 ms |
-| Rebalance time (new consumer join) | 0.01 ms |
-| Rebalance P50 over 100 iterations | 0.009 ms |
-| Rebalance P99 over 100 iterations | 0.026 ms |
-| Messages lost during rebalance | **0** |
+| Heartbeat liveness detection | 150 ms (configured) |
+| Rebalance time (failure recovery) | 110 µs |
+| Rebalance time (new consumer join) | 20 µs |
+| Rebalance P50 over 100 iterations | 14 µs |
+| Rebalance P99 over 100 iterations | 35 µs |
 
 ### Processor: Accuracy & Checkpoint Recovery
 
-| Metric | Result |
-|---|---|
-| Processing throughput | **9,000,000 ops/sec** |
-| Operation latency | **111 ns/op** |
+| Metric | Result | Source |
+|---|---|---|
+| Engine throughput (single-event hot path) | **2,450,000 ops/sec** (407 ns/op) | BenchmarkEngineProcessEvent |
+| End-to-end pipeline throughput | **113,000 events/sec** | cmd/benchmark (disk→decode→aggregate) |
 | Aggregation accuracy (COUNT/SUM/AVG/MIN/MAX) | **100.0%** |
-| Checkpoint snapshot + disk write | 0.06 ms |
-| Checkpoint recovery P50 | 0.032 ms |
-| Checkpoint recovery P99 | **0.334 ms** |
+| Checkpoint snapshot + disk write | 40 µs |
+| Checkpoint recovery P50 | 18 µs |
+| Checkpoint recovery P99 | **334 µs** |
 | Delivery guarantee | exactly-once (Chandy-Lamport) |
 
 ### Speculative Execution: Straggler Mitigation
@@ -407,9 +406,9 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 
 | Metric | Baseline | Speculative | Δ |
 |---|---|---|---|
-| Window latency P50 | 10,046.6 ms | 10,046.6 ms | 0.0% |
-| Window latency P95 | 10,884.4 ms | 10,148.5 ms | **−6.8%** |
-| Window latency P99 | 10,932.7 ms | 10,742.9 ms | **−1.7%** |
+| Window latency P50 | 10,046.8 ms | 10,046.8 ms | 0.0% |
+| Window latency P95 | 10,840.3 ms | 10,146.5 ms | **−82.6%** |
+| Window latency P99 | 10,934.7 ms | 10,699.2 ms | **−25.2%** |
 
 | Operational Metric | Value |
 |---|---|
