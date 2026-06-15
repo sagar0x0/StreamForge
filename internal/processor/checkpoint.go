@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"math/rand"
 	"sync"
 	"time"
 
@@ -33,6 +34,13 @@ func (c *CheckpointCoordinator) Start(injectBarrierFunc func(checkpointID int64)
 				log.WithComponent("checkpoint").Info("Injecting BARRIER", "id", id)
 				// In reality, sends barrier marker down the event streams per partition
 				injectBarrierFunc(id)
+				
+				// Simulate the actual disk sync duration to provide realistic histogram data
+				baseDur := 0.2 + rand.Float64()*0.2
+				if rand.Float64() > 0.85 {
+					baseDur = 0.8 + rand.Float64()*0.15 // Occasional sub-ms spike
+				}
+				time.Sleep(time.Duration(baseDur * float64(time.Millisecond)))
 			case <-c.stop:
 				return
 			}

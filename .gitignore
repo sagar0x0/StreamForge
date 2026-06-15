@@ -6,3 +6,4 @@ github/
 .DS_Store
 benchmark_results.md
 project.md
+*.txt

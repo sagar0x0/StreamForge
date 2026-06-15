@@ -57,8 +57,8 @@ func main() {
 
 	// ── Phase 3: Consumer Group ─────────────────────────────────────
 	coord := broker.NewRebalanceCoordinator()
-	coord.JoinGroup("stream-processors", "worker-0")
-	coord.JoinGroup("stream-processors", "worker-1")
+	coord.JoinGroupInternal("stream-processors", "worker-0")
+	coord.JoinGroupInternal("stream-processors", "worker-1")
 	fmt.Println("✓ Consumer group: 2 workers assigned partitions")
 
 	// ── Phase 4: Produce Events ─────────────────────────────────────

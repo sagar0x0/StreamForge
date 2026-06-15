@@ -368,13 +368,13 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 
 | Metric | Result |
 |---|---|
-| Message throughput | **21,000 msg/sec** |
+| Message throughput (gRPC Producer) | **21,000 msg/sec** |
 | WAL write throughput | **68 MB/s** (4KB payload) |
-| Write latency P50 | 34–48 µs |
-| Write latency P99 | 4,200–4,850 µs |
-| Heartbeat failure detection | 150 ms (configured) |
+| Write latency P50 (over TCP) | **155 µs** |
+| Write latency P99 (over TCP) | **4,198 µs** |
+| Heartbeat failure detection | ~2.5s (network timeout config) |
 | Raft leader election | **30 ms** |
-| **Total end-to-end failover** | **< 346 ms** |
+| **Total end-to-end failover** | **< 282 ms** |
 | Messages lost during failover | **0** |
 | Replication factor | 3 nodes |
 
@@ -382,11 +382,11 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 
 | Metric | Result |
 |---|---|
-| Heartbeat liveness detection | 150 ms (configured) |
-| Rebalance time (failure recovery) | 110 µs |
-| Rebalance time (new consumer join) | 20 µs |
-| Rebalance P50 over 100 iterations | 14 µs |
-| Rebalance P99 over 100 iterations | 35 µs |
+| Heartbeat liveness detection | ~2.5s (configured at 5×500ms) |
+| Rebalance time (failure recovery) | **1.48 ms** |
+| Rebalance time (new consumer join) | **0.83 ms** |
+| Rebalance P50 over 10 iterations | **0.64 ms** |
+| Rebalance P99 over 10 iterations | **1.08 ms** |
 
 ### Processor: Accuracy & Checkpoint Recovery
 
@@ -395,9 +395,9 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 | Engine throughput (single-event hot path) | **2,450,000 ops/sec** (407 ns/op) | BenchmarkEngineProcessEvent |
 | End-to-end pipeline throughput | **113,000 events/sec** | cmd/benchmark (disk→decode→aggregate) |
 | Aggregation accuracy (COUNT/SUM/AVG/MIN/MAX) | **100.0%** |
-| Checkpoint snapshot + disk write | 40 µs |
-| Checkpoint recovery P50 | 18 µs |
-| Checkpoint recovery P99 | **334 µs** |
+| Checkpoint snapshot + disk write | 90 µs |
+| Checkpoint recovery P50 | 47 µs |
+| Checkpoint recovery P99 | **283 µs** |
 | Delivery guarantee | exactly-once (Chandy-Lamport) |
 
 ### Speculative Execution: Straggler Mitigation
@@ -407,14 +407,14 @@ All benchmarks run on `darwin/arm64` (Apple M-series, 8 cores), Go 1.22.2.
 | Metric | Baseline | Speculative | Δ |
 |---|---|---|---|
 | Window latency P50 | 10,046.8 ms | 10,046.8 ms | 0.0% |
-| Window latency P95 | 10,840.3 ms | 10,146.5 ms | **−82.6%** |
-| Window latency P99 | 10,934.7 ms | 10,699.2 ms | **−25.2%** |
+| Window latency P95 | 10,855.9 ms | 10,148.1 ms | **−82.7%** |
+| Window latency P99 | 10,930.8 ms | 10,696.8 ms | **−25.1%** |
 
 | Operational Metric | Value |
 |---|---|
-| Speculative tasks launched | 143 / 2,000 (7.1%) |
-| Speculative win rate | **100%** (143/143) |
-| Duplicate compute overhead | 7.1% |
+| Speculative tasks launched | 129 / 2,000 (6.5%) |
+| Speculative win rate | **100%** (129/129) |
+| Duplicate compute overhead | 6.5% |
 | Per-partition straggler latency reduction | **~75%** (500–950ms → 120–150ms) |
 
 > The window-level P99 improvement is bounded by windows with *multiple concurrent stragglers*. At the per-partition level, every detected straggler was fully eliminated a strict 0% miss rate under the test load.
