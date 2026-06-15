@@ -1,10 +1,12 @@
 package speculative
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
 	"github.com/sagar/streamforge/pkg/types"
 )
 
@@ -27,6 +29,8 @@ func (m *SpeculativeManager) Launch(partitionID int32, lastCheckpoint time.Time)
 		return // already launched
 	}
 	m.activeTaskIDs[partitionID] = true
+
+	metrics.SpeculativeLaunchedTotal.WithLabelValues(fmt.Sprintf("%d", partitionID)).Inc()
 
 	// In real implementation, this would spin up a new processor worker or send gRPC request to spare node
 	log.WithPartition(int(partitionID)).Info("Speculative task launch initiated starting from checkpoint")
@@ -61,10 +65,12 @@ func (a *ResultArbitrator) Submit(windowID types.WindowID, partitionID int32, re
 	if a.tombstones[windowID][partitionID] {
 		// A result has already been submitted for this window partition. Discard.
 		log.Logger.Info("Speculative or original task discarded due to tombstone", "window", windowID, "partition", partitionID)
+		metrics.SpeculativeDiscardedTotal.WithLabelValues(fmt.Sprintf("%d", partitionID)).Inc()
 		return false
 	}
 
 	// First write wins -> Set tombstone
 	a.tombstones[windowID][partitionID] = true
+	metrics.SpeculativeWinsTotal.WithLabelValues(fmt.Sprintf("%d", partitionID)).Inc()
 	return true
 }

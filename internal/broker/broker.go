@@ -5,10 +5,11 @@ import (
 	"net"
 	"sync"
 
-	"github.com/sagar/streamforge/pkg/config"
-	"github.com/sagar/streamforge/pkg/types"
 	"github.com/sagar/streamforge/internal/storage"
+	"github.com/sagar/streamforge/pkg/config"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
+	"github.com/sagar/streamforge/pkg/types"
 	pb "github.com/sagar/streamforge/proto"
 	"google.golang.org/grpc"
 )
@@ -82,7 +83,13 @@ func (b *Broker) AppendData(topic string, partition int32, msg types.Message) (i
 		return 0, fmt.Errorf("partition not found")
 	}
 
-	return part.Append(msg.Key, msg.Value, msg.Timestamp)
+	offset, err := part.Append(msg.Key, msg.Value, msg.Timestamp)
+	if err == nil {
+		pStr := fmt.Sprintf("%d", partition)
+		metrics.BrokerMessagesProduced.WithLabelValues(topic, pStr).Inc()
+		metrics.BrokerPartitionLatestOffset.WithLabelValues(topic, pStr).Set(float64(offset))
+	}
+	return offset, err
 }
 
 func (b *Broker) FetchData(topic string, partition int32, offset int64) (types.Message, error) {

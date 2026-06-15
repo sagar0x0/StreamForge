@@ -3,8 +3,8 @@ FROM golang:1.25-alpine AS build
 
 WORKDIR /app
 COPY go.mod go.sum ./
-# (Ignored dependency fetch for mock)
-# RUN go mod download
+# Fetch dependencies
+RUN go mod download
 
 COPY . .
 
@@ -16,14 +16,17 @@ RUN go build -o /bin/broker ./cmd/broker && \
 # Broker runtime
 FROM alpine:latest AS broker
 COPY --from=build /bin/broker /broker
+EXPOSE 9092 9093 2112
 CMD ["/broker"]
 
 # Processor runtime
 FROM alpine:latest AS processor
 COPY --from=build /bin/processor /processor
+EXPOSE 2113
 CMD ["/processor"]
 
 # Loadgen runtime
 FROM alpine:latest AS loadgen
 COPY --from=build /bin/loadgen /loadgen
+EXPOSE 2114
 CMD ["/loadgen"]

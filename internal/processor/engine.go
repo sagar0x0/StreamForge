@@ -1,11 +1,13 @@
 package processor
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/sagar/streamforge/internal/speculative"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
 	"github.com/sagar/streamforge/pkg/types"
 )
 
@@ -49,6 +51,13 @@ func (e *Engine) ProcessStream(partitionID int32, stream <-chan types.Message) {
 			return
 		case msg := <-stream:
 			processedCount++
+			pStr := fmt.Sprintf("%d", partitionID)
+			metrics.ProcessorEventsProcessed.WithLabelValues(pStr).Inc()
+			
+			// Approximate lag as offset diff (this is a simplified metric for demo purposes)
+			// In reality, lag is LatestBrokerOffset - CurrentOffset
+			// We can just set a dummy/simulated value for now, or assume lag is 0 since we process immediately
+			metrics.ProcessorPartitionLag.WithLabelValues(pStr).Set(0)
 			
 			// 1. Determine Window
 			windows := e.windowOperator.AssignWindows(msg.Timestamp)

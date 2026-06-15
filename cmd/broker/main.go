@@ -15,6 +15,7 @@ import (
 	"github.com/sagar/streamforge/internal/storage"
 	"github.com/sagar/streamforge/pkg/config"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
 )
 
 func main() {
@@ -42,6 +43,8 @@ func main() {
 		log.Logger.Error("Failed to create broker", "err", err)
 		os.Exit(1)
 	}
+
+	metrics.StartMetricsServer(":2112")
 
 	// Add mock partitions for 'orders' topic
 	numPartitions := 4

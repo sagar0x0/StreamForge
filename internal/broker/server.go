@@ -2,8 +2,11 @@ package broker
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sagar/streamforge/pkg/metrics"
 	"github.com/sagar/streamforge/pkg/types"
 	pb "github.com/sagar/streamforge/proto"
 )
@@ -14,6 +17,9 @@ func (b *Broker) Produce(ctx context.Context, req *pb.ProduceRequest) (*pb.Produ
 		Value:     req.Value,
 		Timestamp: time.Now(),
 	}
+
+	timer := prometheus.NewTimer(metrics.BrokerProduceDuration.WithLabelValues(req.Topic, fmt.Sprintf("%d", req.Partition)))
+	defer timer.ObserveDuration()
 
 	offset, err := b.AppendData(req.Topic, req.Partition, msg)
 	if err != nil {
@@ -31,6 +37,8 @@ func (b *Broker) Fetch(ctx context.Context, req *pb.FetchRequest) (*pb.FetchResp
 	if err != nil {
 		return &pb.FetchResponse{}, err
 	}
+
+	metrics.BrokerMessagesFetched.WithLabelValues(req.Topic, fmt.Sprintf("%d", req.Partition)).Inc()
 
 	return &pb.FetchResponse{
 		Key:        msg.Key,

@@ -51,7 +51,7 @@ type Node struct {
 func NewNode(cfg Config, applyCh chan<- []pb.LogEntry) *Node {
 	n := &Node{
 		config:  cfg,
-		state:   NewNodeState(),
+		state:   NewNodeState(cfg.ID),
 		log:     NewLog(),
 		peers:   make(map[int32]pb.RaftServiceClient),
 		conns:   make(map[int32]*grpc.ClientConn),

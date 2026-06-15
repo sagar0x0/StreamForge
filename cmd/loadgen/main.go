@@ -11,6 +11,7 @@ import (
 
 	"github.com/sagar/streamforge/internal/client"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
 )
 
 func main() {
@@ -20,6 +21,8 @@ func main() {
 	if brokersStr == "" {
 		brokersStr = "127.0.0.1:9092"
 	}
+
+	metrics.StartMetricsServer(":2114")
 
 	brokers := strings.Split(brokersStr, ",")
 	log.Logger.Info("Starting load generator", "brokers", brokersStr, "mode", mode)
@@ -55,6 +58,7 @@ func main() {
 					})
 
 					prod.Send("orders", []byte(city), val)
+					metrics.LoadgenEventsSent.WithLabelValues("orders").Inc()
 					// Small sleep to not absolutely kill the CPU, but small enough to get 20k+ ops/sec
 					time.Sleep(100 * time.Microsecond)
 				}

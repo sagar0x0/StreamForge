@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/sagar/streamforge/pkg/metrics"
 	pb "github.com/sagar/streamforge/proto"
 )
 
@@ -23,6 +24,7 @@ func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb
 
 	if req.Term > n.state.CurrentTerm {
 		n.state.CurrentTerm = req.Term
+		metrics.RaftTermCurrent.WithLabelValues(fmt.Sprintf("%d", n.config.ID)).Set(float64(req.Term))
 		n.state.Transition(Follower)
 		n.state.VotedFor = -1
 	}
@@ -58,6 +60,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 
 	if req.Term >= n.state.CurrentTerm {
 		n.state.CurrentTerm = req.Term
+		metrics.RaftTermCurrent.WithLabelValues(fmt.Sprintf("%d", n.config.ID)).Set(float64(req.Term))
 		n.state.Transition(Follower)
 		n.state.VotedFor = -1
 		n.resetElectionTimer()
@@ -97,6 +100,8 @@ func (n *Node) startElection() {
 	n.state.CurrentTerm++
 	n.state.VotedFor = n.config.ID
 	term := n.state.CurrentTerm
+	metrics.RaftElectionsTotal.WithLabelValues(fmt.Sprintf("%d", n.config.ID)).Inc()
+	metrics.RaftTermCurrent.WithLabelValues(fmt.Sprintf("%d", n.config.ID)).Set(float64(term))
 	lastLogIndex := n.log.LastIndex()
 	lastLogTerm := n.log.LastTerm()
 	n.mu.Unlock()
@@ -128,6 +133,7 @@ func (n *Node) startElection() {
 
 			if resp.Term > n.state.CurrentTerm {
 				n.state.CurrentTerm = resp.Term
+				metrics.RaftTermCurrent.WithLabelValues(fmt.Sprintf("%d", n.config.ID)).Set(float64(resp.Term))
 				n.state.Transition(Follower)
 				n.state.VotedFor = -1
 				n.resetElectionTimer()
@@ -172,6 +178,8 @@ func (n *Node) sendHeartbeats() {
 	commitIndex := n.state.CommitIndex
 	n.mu.Unlock()
 
+	metrics.RaftHeartbeatsSent.WithLabelValues(fmt.Sprintf("%d", leaderID)).Inc()
+
 	for peerID, client := range n.peers {
 		go func(id int32, c pb.RaftServiceClient) {
 			n.mu.Lock()
@@ -208,6 +216,7 @@ func (n *Node) sendHeartbeats() {
 
 			if resp.Term > n.state.CurrentTerm {
 				n.state.CurrentTerm = resp.Term
+				metrics.RaftTermCurrent.WithLabelValues(fmt.Sprintf("%d", n.config.ID)).Set(float64(resp.Term))
 				n.state.Transition(Follower)
 				n.state.VotedFor = -1
 				n.resetElectionTimer()

@@ -5,7 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
 )
 
 type CheckpointCoordinator struct {
@@ -35,12 +37,16 @@ func (c *CheckpointCoordinator) Start(injectBarrierFunc func(checkpointID int64)
 				// In reality, sends barrier marker down the event streams per partition
 				injectBarrierFunc(id)
 				
+				timer := prometheus.NewTimer(metrics.ProcessorCheckpointDuration)
+				
 				// Simulate the actual disk sync duration to provide realistic histogram data
 				baseDur := 0.2 + rand.Float64()*0.2
 				if rand.Float64() > 0.85 {
 					baseDur = 0.8 + rand.Float64()*0.15 // Occasional sub-ms spike
 				}
 				time.Sleep(time.Duration(baseDur * float64(time.Millisecond)))
+				timer.ObserveDuration()
+				metrics.ProcessorCheckpointsTotal.Inc()
 			case <-c.stop:
 				return
 			}

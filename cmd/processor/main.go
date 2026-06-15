@@ -9,6 +9,7 @@ import (
 	"github.com/sagar/streamforge/internal/processor"
 	"github.com/sagar/streamforge/internal/speculative"
 	"github.com/sagar/streamforge/pkg/log"
+	"github.com/sagar/streamforge/pkg/metrics"
 	"github.com/sagar/streamforge/pkg/types"
 )
 
@@ -19,6 +20,8 @@ func main() {
 
 	_ = groupID // Group ID used when joining cluster
 	_ = brokersStr
+
+	metrics.StartMetricsServer(":2113")
 
 	log.Logger.Info("Starting processor node", "brokers", brokersStr, "groupID", groupID, "speculation", enableSpeculation)
 
